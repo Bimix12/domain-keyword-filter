@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Domain Keyword Filter & Professional Analysis</title>
+  <meta name="description" content="Paste bulk domains and filter by keywords. Professional analysis for domaining." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0b1020; --card:#121a33; --muted:#9aa3b2; --text:#e6e9ef; --accent:#6ea8ff; --accent-2:#7dffa3; --danger:#ff6b6b; }
+    *{box-sizing:border-box} html,body{height:100%} body{margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:linear-gradient(180deg,#0b1020,#0e1430 40%,#0b1020); color:var(--text)}
+    .container{max-width:1100px; margin:32px auto; padding:0 16px} h1{font-size:clamp(22px,2.2vw,30px); margin:0} .card{background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    textarea, input[type="text"], select{width:100%; background:#0f1630; color:var(--text); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; outline:none} textarea{min-height:180px; resize:vertical; line-height:1.4} label{font-weight:600; font-size:14px; display:block; margin-bottom:8px} .muted{color:var(--muted); font-size:12px} .row{display:flex; gap:10px; flex-wrap:wrap} .btn{appearance:none; border:none; background:var(--accent); color:#041226; font-weight:700; padding:11px 16px; border-radius:12px; cursor:pointer} .btn.secondary{background:#202a52; color:var(--text)} .btn.ghost{background:transparent; border:1px solid rgba(255,255,255,.12); color:var(--text)} .btn.danger{background:var(--danger); color:white} .section-title{font-weight:700; margin:2px 0 10px} table{width:100%; border-collapse:collapse} th,td{border:1px solid rgba(255,255,255,.12); padding:8px; text-align:left; font-size:13px} tbody tr:nth-child(even){background:rgba(255,255,255,.05)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Domain Keyword Filter & Professional Analysis</h1>
+    <label>Domains (paste one per line)</label>
+    <textarea id="domains" placeholder="example.com"></textarea>
+    <button class="btn" id="runBtn">Filter & Analyze</button>
+
+    <h3>Matched Domains (All domains with keywords)</h3>
+    <textarea id="matched" readonly></textarea>
+
+    <div class="card" style="margin-top:16px">
+      <div class="section-title">Professional Auto‑Classification Analysis</div>
+      <table id="analysisTable">
+        <thead>
+          <tr><th>#</th><th>Domain</th><th>Matched Keywords</th><th>Meaning (Arabic)</th><th>Category</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="downloadCsv">Download CSV</button>
+        <button class="btn ghost" id="copyCsv">Copy CSV</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+const predefinedKeywords = [
+  'realestate','homes','hotels','apartments','group','news','restaurants','health','online','tours','bailbonds','capital','realty','autoinsurance','park','medical','carinsurance','business','dental','home','property','healthcare','city','travel','properties','weddings','auto','consulting','law','construction','trust','web','golf','partners','square','place','cars','dentist','air','hotel','tech','village','gallery','county','design','rentals','solutions','hills','lawyers','post','sports','house','houses','resort','media','watch','management','energy','storage','hill','international','plumbing','direct','club','guide','inn','builders','now','blog','foreclosures','officesupply','attorney','college','beach','jobs','lawyer','marketing','center','labs','realtors','store','studio','ridge','roofing','furniture','restaurant','locksmith','photo','mall','golfing','chamber'
+];
+
+const keywordMeanings = {
+  'realestate': 'عقارات','homes': 'منازل','hotels': 'فنادق','apartments': 'شقق','group': 'مجموعة','news': 'أخبار','restaurants': 'مطاعم','health': 'صحة','online': 'عبر الإنترنت','tours': 'جولات','bailbonds': 'كفالات','capital': 'رأس المال','realty': 'عقارات','autoinsurance': 'تأمين سيارات','park': 'حديقة','medical': 'طبي','carinsurance': 'تأمين سيارات','business': 'أعمال','dental': 'أسنان','home': 'منزل','property': 'ملكية','healthcare': 'الرعاية الصحية','city': 'مدينة','travel': 'سفر','properties': 'عقارات','weddings': 'أعراس','auto': 'سيارات','consulting': 'استشارات','law': 'قانون','construction': 'إنشاءات','trust': 'ثقة','web': 'ويب','golf': 'جولف','partners': 'شركاء','square': 'ساحة','place': 'مكان','cars': 'سيارات','dentist': 'طبيب أسنان','air': 'هواء','hotel': 'فندق','tech': 'تكنولوجيا','village': 'قرية','gallery': 'معرض','county': 'مقاطعة','design': 'تصميم','rentals': 'إيجارات','solutions': 'حلول','hills': 'تلال','lawyers': 'محامون','post': 'بوست','sports': 'رياضة','house': 'منزل','houses': 'منازل','resort': 'منتجع','media': 'إعلام','watch': 'ساعة','management': 'إدارة','energy': 'طاقة','storage': 'تخزين','international': 'دولي','plumbing': 'سباكة','direct': 'مباشر','club': 'نادي','guide': 'دليل','inn': 'نزل','builders': 'بناة','now': 'الآن','blog': 'مدونة','foreclosures': 'حجز عقاري','officesupply': 'لوازم مكتبية','attorney': 'محامي','college': 'كلية','beach': 'شاطئ','jobs': 'وظائف','lawyer': 'محامي','marketing': 'تسويق','center': 'مركز','labs': 'مختبرات','realtors': 'سماسرة','store': 'متجر','studio': 'استوديو','ridge': 'تلة','roofing': 'تغطية أسطح','furniture': 'أثاث','restaurant': 'مطعم','locksmith': 'صانع أقفال','photo': 'صورة','mall': 'مركز تسوق','golfing': 'لعب جولف','chamber': 'غرفة'
+};
+
+function run(){
+  const domains = $('domains').value.split(/\s+/).filter(Boolean).map(d=>d.trim().toLowerCase());
+  const matched = [];
+  const analysisRows = [];
+
+  for(const d of domains){
+    const hits = predefinedKeywords.filter(k=>d.includes(k));
+    if(hits.length > 0){
+      matched.push(d);
+      const meanings = hits.map(k=>keywordMeanings[k] || k);
+      const category = hits.some(k => ['tech','web','online','design','solutions'].includes(k)) ? 'Tech/Brand' : 'Detected';
+      analysisRows.push({ domain: d, keywords: hits, meanings: meanings, category: category });
+    }
+  }
+
+  $('matched').value = matched.join('\n');
+
+  const tbody = $('analysisTable').querySelector('tbody');
+  tbody.innerHTML = '';
+  analysisRows.forEach((row,i)=>{
+    const tr = tbody.insertRow();
+    tr.insertCell().textContent = i+1;
+    tr.insertCell().textContent = row.domain;
+    tr.insertCell().textContent = row.keywords.join(', ');
+    tr.insertCell().textContent = row.meanings.join(', ');
+    tr.insertCell().textContent = row.category;
+  });
+}
+
+$('runBtn').addEventListener('click', run);
+</script>
+</body>
+</html>
